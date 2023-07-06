@@ -3,9 +3,10 @@ from django.shortcuts import render, redirect
 from web.forms import RegForm, LoginForm
 from postolit.clickhouse import create_connection
 from .clickhouse_models import Vedomost3
-from .models import User, Session
+from .models import User#, Session
 from django.utils.crypto import get_random_string
 from datetime import datetime, timedelta
+from django.contrib.auth import authenticate, login, logout # <Для аутентификации с помощью сессий (встроенной в Django)>
 
 
 def index(request):
@@ -16,24 +17,6 @@ def index(request):
 def index_2(request, id):
     print(id)
     return HttpResponse(f'Hello, World! {id}')
-
-
-def reg(request):
-    form = RegForm(request.POST or None) # None - это GET-запрос (просто загружаем страницу), request.POST - отправляем форму
-    message = None
-    if request.method == 'POST':
-        if form.is_valid():
-            email = form.cleaned_data['email']
-            password = form.cleaned_data['password']
-            print(email, password)
-            message = f'{email} {password} Вы успешно зарегистрировались'
-
-    context = {
-        'form': form,
-        'message': message
-    }
-    return render(request, template_name='reg.html', context=context)
-
 
 db = create_connection()
 
@@ -104,8 +87,13 @@ def reg(request):
         if form.is_valid():
             email = form.cleaned_data['email']
             password = form.cleaned_data['password']
-            name = form.cleaned_data['name']
-            User.objects.create(login=email, password=password, name=name) # создаем пользователя в базе данных
+            # <Для аутентификации с помощью сессий (НЕ встроенной в Django)>
+            #name = form.cleaned_data['name']
+            #User.objects.create(login=email, password=password, name=name) # создаем пользователя в базе данных
+
+            # <Для аутентификации с помощью сессий (встроенной в Django)>
+            User.objects.create_user(username=email, password=password, email=email)
+
             print(email, password)
             message = f'{email} {password} Вы успешно зарегистрировались'
     context = {
@@ -114,7 +102,8 @@ def reg(request):
     }
     return render(request, template_name='reg.html', context=context)
 
-def do_login(log_user, password): # Функция для создания аутентификации пользователя и создания сессии для пользователя
+# <Для аутентификации с помощью сессий (НЕ встроенной в Django)>
+'''def do_login(log_user, password): # Функция для создания аутентификации пользователя и создания сессии для пользователя
     try:
         user = User.objects.get(login=log_user) # Проверяем на наличие ползователя в базе по email
     except User.DoesNotExist:
@@ -127,18 +116,31 @@ def do_login(log_user, password): # Функция для создания ау�
     session.user = user # Привязываем пользователя
     session.expires = datetime.now() + timedelta(days=1) # Устанавливаем время жизни сессии
     session.save() # Сохраняем объект сессии
-    return session
+    return session'''
 
-def login(request):
+def login_view(request):
     error = ''
     form = LoginForm()
     if request.method == 'POST':
         form = LoginForm(request.POST)
-        if form.is_valid():
-            login = form.cleaned_data['email']
+        if form.is_valid():            
             password = form.cleaned_data['password']
-            session = do_login(login, password) # Получаем объект сессии
-            url = request.POST.get('continue', 'web') # адрес для редиректа
+
+            # <Для аутентификации с помощью сессий (НЕ встроенной в Django)>
+            #login = form.cleaned_data['email']
+            #session = do_login(login, password) # Получаем объект сессии
+
+            # <Для аутентификации с помощью сессий (встроенной в Django)>
+            email = form.cleaned_data['email']
+            user = authenticate(request, username=email, password=password)
+            if user is not None:
+                login(request, user)
+                return redirect('web')
+            else:
+                error = "Неверный логин или пароль" 
+
+            # <Для аутентификации с помощью сессий (НЕ встроенной в Django)>
+            '''url = request.POST.get('continue', 'web') # адрес для редиректа
             response = redirect(url)
             if session: # Если пользователь аутентифицирован
                 response = HttpResponseRedirect(url) # Создаем ответ в виде редиректа на адрес
@@ -146,6 +148,11 @@ def login(request):
                 response.set_cookie('session_id', session.key, domain='127.0.0.1', httponly=True, expires=session.expires)
                 return response
             else:
-                error = "Неверный логин или пароль"
+                error = "Неверный логин или пароль"'''
 
     return render(request, "login.html", {'form': form, 'error': error})
+
+
+def logout_view(request):
+    logout(request)
+    return redirect('login')
