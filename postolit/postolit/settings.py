@@ -94,6 +94,13 @@ DATABASES = {
     }
 }
 
+CLICKHOUSE_DATABASE = {
+    "db_url" : "http://g2.plzvpn.ru:8123/",
+    "username": "default",
+    "db_name": "test",
+    "password": "1",
+}
+
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
