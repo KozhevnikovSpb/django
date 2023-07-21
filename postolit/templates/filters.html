@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Filters</title>
+</head>
+<body>
+{% load capitalize_filter %} <!-- Импортируем собственный фильтр -->
+<p>1. last - возвращает последний элемент списка</p>
+{{ my_objects|last }}<br>
+{{ my_list|last }}<br>
+<p>2. join - объединяет список строк в одну строку</p>
+{{ my_list|join:'' }}<br>
+<p>3. escape - экранирует HTML</p>
+{{ my_text|escape }}<br>
+<p>4. length - возвращает кол-во элементов в списке</p>
+{{ my_objects|length }}<br>
+{{ my_list|length }}<br>
+<p>5. lower - преобразует строку в нижний регистр</p>
+{{ my_text|lower }}<br>
+<p>6. upper - преобразует строку в верхний регистр</p>
+{{ my_text|upper }}<br>
+<p>7. title - все слова с прописных(заглавных) букв</p>
+{{ my_text|title }}
+<p>8. random - возвращает рандомный элемент из списка</p>
+{{ my_list|random }}
+<p>9. truncatechars - обрезает строку до n символов</p>
+{{ my_text|truncatechars:7 }}
+<p>10. time - форматирует время с заданным форматом</p>
+{{ now_time|time:"H:i"}}
+<br>
+<p> Собственный фильтр </p>
+<p>Использум собственный фильтр, который начинает строку с заглавной буквы</p>
+<p>{{ my_word|capitalize }}</p>
+</body>
+</html>

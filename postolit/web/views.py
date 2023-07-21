@@ -180,3 +180,19 @@ def anonymous_page(request): # Последующая страница посл�
     anonymous_data = session.get('anonymous_data') # Извлекаем данные об анонимном пользователе, которые создали для текущей сессии
     print(anonymous_data)
     return render(request, 'anonymous.html', {'anonymous_data': anonymous_data})
+
+
+def filters(request): # Функция для передачи тестовых данных для фильтров
+    context = { # Тестовый датасет для использования в шаблоне filters.html
+        'my_word': 'hello',
+        'my_objects': [
+            {'id': 0, 'name': 'ivanov ivan'},
+            {'id': 1, 'name': 'ivanov ivan'},
+            {'id': 2, 'name': 'ivanov ivan'}
+        ],
+        'my_text': 'Hello, World, <b> dsadas</b>',
+        'my_list': ['g', 'o', 'o', 'd'],
+        'my_list_int': [1, 2, 3, 4],
+        'now_time': datetime.now()
+    }
+    return render(request, 'filters.html', context)
