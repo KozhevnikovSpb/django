@@ -7,6 +7,7 @@ from .models import User#, Session
 from django.utils.crypto import get_random_string
 from datetime import datetime, timedelta
 from django.contrib.auth import authenticate, login, logout # <Для аутентификации с помощью сессий (встроенной в Django)>
+from django.contrib.sessions.backends.db import SessionStore
 
 
 def index(request):
@@ -156,3 +157,26 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return redirect('login')
+
+
+def anonymous_session(request): # Например, anonymous_session - точка входа в ваше веб-приложение,
+# в этой функции сохраняем в базу какие-либо данные о текущем, еще не авторизованном пользователе,
+# далее используем эти данные в своих целях  
+    session_key = request.COOKIES.get('sessionid') # Извлекаем id сессии пользователя из cookies
+    if not session_key: # Если его нет, то создаем новую сессию
+        session = SessionStore()
+        session.save()
+        session_key = session.session_key
+    session = SessionStore(session_key=session_key) # Извлекаем объект сессии из базы данных
+    session['anonymous_data'] = 'Some My Data' # Устанавливаем какие-то данные для сессии текущего анонимного пользователя
+    session.save() # Сохраняем
+    response = render(request, 'anonymous.html') # Создаем ответ для пользователя
+    response.set_cookie('sessionid', session_key, httponly=True) # Устанавливаем в cookies ответа ключ sessionid
+    return response
+def anonymous_page(request): # Последующая страница после anonymous_session, теперь можем использовать данные,
+    # которые установили в точке входа(anonymous_session)
+    session_key = request.COOKIES.get('sessionid') # Извлекаем id сессии пользователя из cookies
+    session = SessionStore(session_key=session_key) # Извлекаем объект сессии из базы данных
+    anonymous_data = session.get('anonymous_data') # Извлекаем данные об анонимном пользователе, которые создали для текущей сессии
+    print(anonymous_data)
+    return render(request, 'anonymous.html', {'anonymous_data': anonymous_data})

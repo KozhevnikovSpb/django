@@ -1,7 +1,7 @@
 from django.urls import path
 from rest_framework.authtoken.views import obtain_auth_token # Для обычного токена
 from rest_framework_simplejwt.views import TokenRefreshView # Для JWT-токена
-from .views import UserView
+from .views import UserView, JWTTokenObtainPairView
 
 urlpatterns = [
     path('get_token/', obtain_auth_token, name="get_token"),
